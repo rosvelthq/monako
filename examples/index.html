@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Monako Demo</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f5f5f5;
+      min-height: 100vh;
+      padding: 40px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 10px;
+      color: #333;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #666;
+      margin-bottom: 40px;
+    }
+
+    .demo-section {
+      max-width: 1200px;
+      margin: 0 auto 40px;
+    }
+
+    .demo-section h2 {
+      margin-bottom: 20px;
+      color: #444;
+    }
+
+    .face-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+    }
+
+    .face-card {
+      background: white;
+      border-radius: 16px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .face-card .label {
+      margin-top: 12px;
+      font-size: 14px;
+      color: #666;
+      text-transform: capitalize;
+    }
+
+    .controls {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 20px;
+    }
+
+    button {
+      background: #333;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background 0.2s;
+    }
+
+    button:hover {
+      background: #555;
+    }
+
+    .hero {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 40px;
+    }
+
+    .color-grid {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+  </style>
+</head>
+<body>
+  <h1>Monako</h1>
+  <p class="subtitle">Lightweight animated faces with expressive eyes</p>
+
+  <div class="hero" id="hero"></div>
+
+  <div class="controls">
+    <button onclick="heroFace.blink()">Blink</button>
+    <button onclick="heroFace.randomEmotion()">Random Emotion</button>
+    <button onclick="randomColor()">Random Color</button>
+  </div>
+
+  <div class="demo-section">
+    <h2>Emotions</h2>
+    <div class="face-grid" id="emotions"></div>
+  </div>
+
+  <div class="demo-section">
+    <h2>Colors</h2>
+    <div class="color-grid" id="colors"></div>
+  </div>
+
+  <div class="demo-section">
+    <h2>Sizes</h2>
+    <div class="face-grid" id="sizes"></div>
+  </div>
+
+  <script type="module">
+    import { Monako } from '../src/Monako.js';
+
+    // Hero face
+    window.heroFace = new Monako({
+      container: '#hero',
+      size: 150,
+      color: '#000000',
+      emotion: 'neutral',
+    });
+
+    window.randomColor = () => {
+      const colors = ['#000000', '#1a1a2e', '#16213e', '#0f3460', '#533483', '#e94560', '#4a7c59', '#2c3e50'];
+      const color = colors[Math.floor(Math.random() * colors.length)];
+      heroFace.setColor(color);
+    };
+
+    // Emotions demo
+    const emotionContainer = document.getElementById('emotions');
+    const emotionList = Monako.getEmotions();
+
+    emotionList.forEach(emotion => {
+      const card = document.createElement('div');
+      card.className = 'face-card';
+
+      new Monako({
+        container: card,
+        size: 80,
+        emotion: emotion,
+        followCursor: true,
+      });
+
+      const label = document.createElement('span');
+      label.className = 'label';
+      label.textContent = emotion;
+      card.appendChild(label);
+
+      emotionContainer.appendChild(card);
+    });
+
+    // Colors demo
+    const colorContainer = document.getElementById('colors');
+    const colors = [
+      '#000000', '#1a1a2e', '#16213e', '#0f3460',
+      '#533483', '#e94560', '#4a7c59', '#c9485b',
+      '#f39c12', '#2ecc71', '#3498db', '#9b59b6'
+    ];
+
+    colors.forEach(color => {
+      const face = new Monako({
+        container: colorContainer,
+        size: 60,
+        color: color,
+      });
+    });
+
+    // Sizes demo
+    const sizeContainer = document.getElementById('sizes');
+    const sizes = [40, 60, 80, 100, 120];
+
+    sizes.forEach(size => {
+      const card = document.createElement('div');
+      card.className = 'face-card';
+
+      new Monako({
+        container: card,
+        size: size,
+      });
+
+      const label = document.createElement('span');
+      label.className = 'label';
+      label.textContent = `${size}px`;
+      card.appendChild(label);
+
+      sizeContainer.appendChild(card);
+    });
+  </script>
+</body>
+</html>

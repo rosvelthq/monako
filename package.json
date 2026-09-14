@@ -1,0 +1,69 @@
+{
+  "name": "monako",
+  "version": "0.1.0",
+  "description": "Lightweight animated faces with expressive eyes for tables, agents, and anywhere you need personality",
+  "type": "module",
+  "main": "dist/monako.umd.js",
+  "module": "dist/monako.esm.js",
+  "exports": {
+    ".": {
+      "import": "./dist/monako.esm.js",
+      "require": "./dist/monako.umd.js",
+      "types": "./dist/monako.d.ts"
+    },
+    "./react": {
+      "import": "./dist/monako-react.esm.js",
+      "require": "./dist/monako-react.umd.js",
+      "types": "./dist/monako-react.d.ts"
+    }
+  },
+  "types": "dist/monako.d.ts",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "rollup -c",
+    "dev": "rollup -c -w",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "avatar",
+    "face",
+    "emoji",
+    "animated",
+    "eyes",
+    "svg",
+    "lightweight",
+    "emotion",
+    "expression",
+    "react"
+  ],
+  "author": "matthewguillen",
+  "license": "MIT",
+  "homepage": "https://github.com/rosvelthq/monako#readme",
+  "bugs": {
+    "url": "https://github.com/rosvelthq/monako/issues"
+  },
+  "peerDependencies": {
+    "react": ">=17.0.0"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@rollup/plugin-terser": "^0.4.4",
+    "@rollup/plugin-typescript": "^11.1.6",
+    "@types/react": "^18.3.0",
+    "react": "^18.3.0",
+    "rollup": "^4.21.0",
+    "tslib": "^2.6.3",
+    "typescript": "^5.5.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rosvelthq/monako.git"
+  }
+}
