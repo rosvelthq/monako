@@ -80,6 +80,7 @@ class Monako {
       eyeColor: options.eyeColor || '#ffffff',
       emotion: options.emotion || defaultEmotion,
       shape: options.shape || 'circle', // 'circle' | 'square' | 'rounded'
+      eyeStyle: options.eyeStyle || 'smooth', // 'smooth' | 'pixel'
       followCursor: options.followCursor ?? true,
       autoAnimate: options.autoAnimate ?? true,
       container: options.container || null,
@@ -175,6 +176,9 @@ class Monako {
     svg.setAttribute('width', size);
     svg.setAttribute('height', size);
     svg.setAttribute('viewBox', '0 0 100 100');
+    if (this.options.eyeStyle === 'pixel') {
+      svg.setAttribute('shape-rendering', 'crispEdges');
+    }
     svg.style.display = 'block';
 
     // Face shape
@@ -205,6 +209,10 @@ class Monako {
       ? this.currentEmotion.leftEye
       : this.currentEmotion.rightEye;
 
+    if (this.options.eyeStyle === 'pixel') {
+      return this._createPixelEye(ns, side, eyeData);
+    }
+
     const eye = document.createElementNS(ns, 'ellipse');
     eye.setAttribute('cx', eyeData.cx * 100);
     eye.setAttribute('cy', eyeData.cy * 100);
@@ -227,6 +235,27 @@ class Monako {
         : -this.currentEmotion.droopAngle;
       eye.setAttribute('transform', `rotate(${droop} ${eyeData.cx * 100} ${eyeData.cy * 100})`);
     }
+
+    return eye;
+  }
+
+  _createPixelEye(ns, side, eyeData) {
+    // Pixel eyes: simple rectangles
+    const eye = document.createElementNS(ns, 'rect');
+    const w = eyeData.rx * 100 * 1.4; // width
+    const h = eyeData.ry * 100 * 1.6; // height
+    const cx = eyeData.cx * 100;
+    const cy = eyeData.cy * 100;
+
+    eye.setAttribute('x', cx - w / 2);
+    eye.setAttribute('y', cy - h / 2);
+    eye.setAttribute('width', w);
+    eye.setAttribute('height', h);
+    eye.setAttribute('fill', this.options.eyeColor);
+    eye.setAttribute('data-cx', cx);
+    eye.setAttribute('data-cy', cy);
+    eye.setAttribute('data-w', w);
+    eye.setAttribute('data-h', h);
 
     return eye;
   }
@@ -268,6 +297,11 @@ class Monako {
   _updateEyes() {
     if (!this.leftEyeEl || !this.rightEyeEl) return;
 
+    if (this.options.eyeStyle === 'pixel') {
+      this._updatePixelEyes();
+      return;
+    }
+
     const leftData = this.currentEmotion.leftEye;
     const rightData = this.currentEmotion.rightEye;
 
@@ -291,6 +325,34 @@ class Monako {
       this.leftEyeEl.setAttribute('ry', leftData.ry * 100);
       this.rightEyeEl.setAttribute('ry', rightData.ry * 100);
     }
+  }
+
+  _updatePixelEyes() {
+    const updatePixelEye = (eye) => {
+      const baseCx = parseFloat(eye.getAttribute('data-cx'));
+      const baseCy = parseFloat(eye.getAttribute('data-cy'));
+      const w = parseFloat(eye.getAttribute('data-w'));
+      const h = parseFloat(eye.getAttribute('data-h'));
+
+      const cx = baseCx + this.lookOffset.x;
+      const cy = baseCy + this.lookOffset.y;
+
+      eye.setAttribute('x', cx - w / 2);
+      eye.setAttribute('y', cy - h / 2);
+
+      // Blink by reducing height
+      if (this.isBlinking) {
+        const blinkScale = Math.max(0.1, 1 - this.blinkState);
+        const newH = h * blinkScale;
+        eye.setAttribute('height', newH);
+        eye.setAttribute('y', cy - newH / 2);
+      } else {
+        eye.setAttribute('height', h);
+      }
+    };
+
+    updatePixelEye(this.leftEyeEl);
+    updatePixelEye(this.rightEyeEl);
   }
 
   _scheduleBlink() {
@@ -419,6 +481,30 @@ class Monako {
    */
   static getShapes() {
     return ['circle', 'square', 'rounded'];
+  }
+
+  /**
+   * Set eye style
+   * @param {'smooth' | 'pixel'} style - Eye style
+   */
+  setEyeStyle(style) {
+    if (this.options.eyeStyle === style) return;
+    this.options.eyeStyle = style;
+    // Update shape-rendering on svg
+    if (style === 'pixel') {
+      this.element.setAttribute('shape-rendering', 'crispEdges');
+    } else {
+      this.element.removeAttribute('shape-rendering');
+    }
+    this._rebuildEyes();
+  }
+
+  /**
+   * Get available eye styles
+   * @returns {string[]}
+   */
+  static getEyeStyles() {
+    return ['smooth', 'pixel'];
   }
 
   _rebuildFace() {

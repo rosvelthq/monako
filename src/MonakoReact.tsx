@@ -3,6 +3,7 @@ import { Monako } from './Monako.js';
 import type { EmotionName } from './emotions.js';
 
 export type ShapeName = 'circle' | 'square' | 'rounded';
+export type EyeStyleName = 'smooth' | 'pixel';
 
 export interface MonakoProps {
   /** Size in pixels (default: 100) */
@@ -15,6 +16,8 @@ export interface MonakoProps {
   emotion?: EmotionName;
   /** Face shape (default: 'circle') */
   shape?: ShapeName;
+  /** Eye style: smooth (ellipse) or pixel (rect) (default: 'smooth') */
+  eyeStyle?: EyeStyleName;
   /** Follow cursor movement (default: true) */
   followCursor?: boolean;
   /** Auto animate eyes and blink (default: true) */
@@ -44,6 +47,8 @@ export interface MonakoRef {
   setEyeColor: (color: string) => void;
   /** Set face shape */
   setShape: (shape: ShapeName) => void;
+  /** Set eye style */
+  setEyeStyle: (style: EyeStyleName) => void;
   /** Get the underlying Monako instance */
   getInstance: () => Monako | null;
 }
@@ -61,6 +66,7 @@ export const MonakoFace = forwardRef<MonakoRef, MonakoProps>(
       eyeColor = '#ffffff',
       emotion = 'neutral',
       shape = 'circle',
+      eyeStyle = 'smooth',
       followCursor = true,
       autoAnimate = true,
       seed = null,
@@ -82,6 +88,7 @@ export const MonakoFace = forwardRef<MonakoRef, MonakoProps>(
       setColor: (c) => instanceRef.current?.setColor(c),
       setEyeColor: (c) => instanceRef.current?.setEyeColor(c),
       setShape: (s) => instanceRef.current?.setShape(s),
+      setEyeStyle: (s) => instanceRef.current?.setEyeStyle(s),
       getInstance: () => instanceRef.current,
     }));
 
@@ -96,6 +103,7 @@ export const MonakoFace = forwardRef<MonakoRef, MonakoProps>(
         eyeColor,
         emotion,
         shape,
+        eyeStyle,
         followCursor,
         autoAnimate,
         seed,
@@ -131,6 +139,11 @@ export const MonakoFace = forwardRef<MonakoRef, MonakoProps>(
     useEffect(() => {
       instanceRef.current?.setShape(shape);
     }, [shape]);
+
+    // Update eye style
+    useEffect(() => {
+      instanceRef.current?.setEyeStyle(eyeStyle);
+    }, [eyeStyle]);
 
     return (
       <div
