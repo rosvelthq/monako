@@ -1,6 +1,6 @@
 {
   "name": "monako",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Lightweight animated faces with expressive eyes for tables, agents, and anywhere you need personality",
   "type": "module",
   "main": "dist/monako.umd.js",
@@ -34,6 +34,7 @@
     "animated",
     "eyes",
     "svg",
+    "pixel",
     "lightweight",
     "emotion",
     "expression",
