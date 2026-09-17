@@ -1,31 +1,36 @@
 {
   "name": "monako",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Lightweight animated faces with expressive eyes for tables, agents, and anywhere you need personality",
   "type": "module",
   "main": "dist/monako.umd.js",
   "module": "dist/monako.esm.js",
   "exports": {
     ".": {
+      "types": "./dist/types/index.d.ts",
       "import": "./dist/monako.esm.js",
-      "require": "./dist/monako.umd.js",
-      "types": "./dist/monako.d.ts"
+      "require": "./dist/monako.umd.js"
     },
     "./react": {
+      "types": "./dist/types/MonakoReact.d.ts",
       "import": "./dist/monako-react.esm.js",
-      "require": "./dist/monako-react.umd.js",
-      "types": "./dist/monako-react.d.ts"
+      "require": "./dist/monako-react.umd.js"
     }
   },
-  "types": "dist/monako.d.ts",
+  "types": "dist/types/index.d.ts",
   "files": [
     "dist",
     "src"
   ],
   "scripts": {
-    "build": "rollup -c",
+    "build": "npm run build:types && rollup -c",
+    "build:types": "rm -rf dist/types && tsc -p tsconfig.json --noEmit false --declaration --emitDeclarationOnly --outDir dist/types",
+    "typecheck": "tsc -p tsconfig.json",
     "dev": "rollup -c -w",
-    "prepublishOnly": "npm run build"
+    "pretest": "npm run build",
+    "test": "node --test test/*.test.js",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm run typecheck && npm test"
   },
   "keywords": [
     "avatar",
