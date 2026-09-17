@@ -1,20 +1,26 @@
-import { useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  forwardRef,
+  useImperativeHandle,
+} from 'react';
 import { Monako } from './Monako.js';
-import type { EmotionName } from './emotions.js';
+import { resolveTraits } from './identity.js';
+import type { EmotionName, ShapeName, EyeStyleName, Traits } from './traits.js';
 
-export type ShapeName = 'circle' | 'square' | 'rounded';
-export type EyeStyleName = 'smooth' | 'pixel';
+export type { EmotionName, ShapeName, EyeStyleName, Traits };
 
 export interface MonakoProps {
   /** Size in pixels (default: 100) */
   size?: number;
-  /** Face color (default: '#000000') */
+  /** Face color (default: '#000000', or derived from `seed`/`token`) */
   color?: string;
-  /** Eye color (default: '#ffffff') */
+  /** Eye color (default: '#ffffff', or derived from `seed`/`token`) */
   eyeColor?: string;
-  /** Emotion (default: 'neutral') */
+  /** Emotion (default: 'neutral', or derived from `seed`/`token`) */
   emotion?: EmotionName;
-  /** Face shape (default: 'circle') */
+  /** Face shape (default: 'circle', or derived from `seed`/`token`) */
   shape?: ShapeName;
   /** Eye style: smooth (ellipse) or pixel (rect) (default: 'smooth') */
   eyeStyle?: EyeStyleName;
@@ -22,14 +28,47 @@ export interface MonakoProps {
   followCursor?: boolean;
   /** Auto animate eyes and blink (default: true) */
   autoAnimate?: boolean;
-  /** Seed for reproducible faces */
-  seed?: number | null;
+  /**
+   * Derives every trait not passed explicitly, and seeds the blink rhythm.
+   * The same seed always renders the same face — pass a stable id and you get
+   * a consistent avatar with nothing to store.
+   */
+  seed?: string | number | null;
+  /**
+   * A `monako:1` token, as produced by `Monako.toToken()`. Takes precedence over
+   * `seed`; explicit trait props still win over both.
+   *
+   * Unlike the `Monako` class, a token this component cannot parse does not
+   * throw — it warns and falls back, because this value usually arrives from a
+   * database and a bad row should not blank the page.
+   */
+  token?: string | null;
   /** Additional class name */
   className?: string;
   /** Inline styles */
   style?: React.CSSProperties;
   /** Click handler */
   onClick?: () => void;
+}
+
+/**
+ * Tokens we have already complained about.
+ *
+ * A broken token usually comes from a database row, which means it arrives on
+ * every render of every list that includes it. Warn once per distinct value so
+ * the signal survives; no `process.env` check, because this build also runs in
+ * browsers that have no `process` at all.
+ */
+const warned = new Set<string>();
+
+function warnOnce(token: string | null, error: unknown): void {
+  const key = String(token);
+  if (warned.has(key)) return;
+  warned.add(key);
+  console.warn(
+    `[monako] ignoring unusable token ${JSON.stringify(token)}:`,
+    error instanceof Error ? error.message : error
+  );
 }
 
 export interface MonakoRef {
@@ -49,11 +88,13 @@ export interface MonakoRef {
   setShape: (shape: ShapeName) => void;
   /** Set eye style */
   setEyeStyle: (style: EyeStyleName) => void;
+  /** Current traits, including any changed through the ref */
+  getTraits: () => Traits | null;
+  /** Current traits as a `monako:1` token */
+  toToken: () => string | null;
   /** Get the underlying Monako instance */
   getInstance: () => Monako | null;
 }
-
-export type { EmotionName };
 
 /**
  * React component wrapper for Monako
@@ -62,14 +103,17 @@ export const MonakoFace = forwardRef<MonakoRef, MonakoProps>(
   (
     {
       size = 100,
-      color = '#000000',
-      eyeColor = '#ffffff',
-      emotion = 'neutral',
-      shape = 'circle',
-      eyeStyle = 'smooth',
+      // No defaults on the five trait props: leaving them undefined is what
+      // lets `seed` and `token` supply them. `resolveTraits` fills the gaps.
+      color,
+      eyeColor,
+      emotion,
+      shape,
+      eyeStyle,
       followCursor = true,
       autoAnimate = true,
       seed = null,
+      token = null,
       className,
       style,
       onClick,
@@ -78,6 +122,30 @@ export const MonakoFace = forwardRef<MonakoRef, MonakoProps>(
   ) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const instanceRef = useRef<Monako | null>(null);
+
+    const traits = useMemo<Traits>(() => {
+      try {
+        return resolveTraits({
+          seed,
+          token,
+          color,
+          eyeColor,
+          emotion,
+          shape,
+          eyeStyle,
+        });
+      } catch (error) {
+        warnOnce(token, error);
+        return resolveTraits({
+          seed,
+          color,
+          eyeColor,
+          emotion,
+          shape,
+          eyeStyle,
+        });
+      }
+    }, [seed, token, color, eyeColor, emotion, shape, eyeStyle]);
 
     // Expose methods via ref
     useImperativeHandle(ref, () => ({
@@ -89,6 +157,8 @@ export const MonakoFace = forwardRef<MonakoRef, MonakoProps>(
       setEyeColor: (c) => instanceRef.current?.setEyeColor(c),
       setShape: (s) => instanceRef.current?.setShape(s),
       setEyeStyle: (s) => instanceRef.current?.setEyeStyle(s),
+      getTraits: () => instanceRef.current?.getTraits() ?? null,
+      toToken: () => instanceRef.current?.toToken() ?? null,
       getInstance: () => instanceRef.current,
     }));
 
@@ -99,20 +169,19 @@ export const MonakoFace = forwardRef<MonakoRef, MonakoProps>(
       instanceRef.current = new Monako({
         container: containerRef.current,
         size,
-        color,
-        eyeColor,
-        emotion,
-        shape,
-        eyeStyle,
         followCursor,
         autoAnimate,
         seed,
+        ...traits,
       });
 
       return () => {
         instanceRef.current?.destroy();
         instanceRef.current = null;
       };
+      // Mount only. Every trait below has its own effect, so the instance is
+      // updated in place rather than torn down and rebuilt on each change.
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     // Update size
@@ -122,28 +191,28 @@ export const MonakoFace = forwardRef<MonakoRef, MonakoProps>(
 
     // Update color
     useEffect(() => {
-      instanceRef.current?.setColor(color);
-    }, [color]);
+      instanceRef.current?.setColor(traits.color);
+    }, [traits.color]);
 
     // Update eye color
     useEffect(() => {
-      instanceRef.current?.setEyeColor(eyeColor);
-    }, [eyeColor]);
+      instanceRef.current?.setEyeColor(traits.eyeColor);
+    }, [traits.eyeColor]);
 
     // Update emotion
     useEffect(() => {
-      instanceRef.current?.setEmotion(emotion);
-    }, [emotion]);
+      instanceRef.current?.setEmotion(traits.emotion);
+    }, [traits.emotion]);
 
     // Update shape
     useEffect(() => {
-      instanceRef.current?.setShape(shape);
-    }, [shape]);
+      instanceRef.current?.setShape(traits.shape);
+    }, [traits.shape]);
 
     // Update eye style
     useEffect(() => {
-      instanceRef.current?.setEyeStyle(eyeStyle);
-    }, [eyeStyle]);
+      instanceRef.current?.setEyeStyle(traits.eyeStyle);
+    }, [traits.eyeStyle]);
 
     return (
       <div

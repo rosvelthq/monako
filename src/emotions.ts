@@ -1,11 +1,42 @@
 /**
- * Emotion definitions for Monako faces
- * Each emotion defines eye shape, position, and animation parameters
+ * Emotion definitions for Monako faces.
+ * Each emotion defines eye shape, position, and animation parameters.
  */
 
-/** @typedef {'neutral'|'happy'|'sad'|'surprised'|'angry'|'sleepy'|'curious'|'love'} EmotionName */
+import type { EmotionName } from './traits.js';
 
-export const emotions = {
+export interface EyeGeometry {
+  /** Horizontal radius, as a fraction of the 100-unit viewBox. */
+  rx: number;
+  /** Vertical radius. */
+  ry: number;
+  /** Centre x. */
+  cx: number;
+  /** Centre y. */
+  cy: number;
+}
+
+export interface EmotionConfig {
+  leftEye: EyeGeometry;
+  rightEye: EyeGeometry;
+  /** How far the eyes travel when following the pointer. */
+  lookRange: number;
+  /** [min, max] milliseconds between blinks. */
+  blinkInterval: readonly [number, number];
+  /** Degrees the eyes rotate inward. */
+  tiltAngle?: number;
+  /** Degrees the eyes rotate outward. */
+  droopAngle?: number;
+  /**
+   * Declared by 'happy' and 'love' but read by nothing — the renderer has
+   * never implemented either. Left in place because removing them would be a
+   * silent visual change to two emotions; implement or delete deliberately.
+   */
+  squint?: number;
+  sparkle?: boolean;
+}
+
+export const emotions: Record<EmotionName, EmotionConfig> = {
   neutral: {
     leftEye: { rx: 0.12, ry: 0.22, cx: 0.35, cy: 0.42 },
     rightEye: { rx: 0.12, ry: 0.22, cx: 0.65, cy: 0.42 },
@@ -61,4 +92,4 @@ export const emotions = {
   },
 };
 
-export const defaultEmotion = 'neutral';
+export const defaultEmotion: EmotionName = 'neutral';
