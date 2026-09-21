@@ -44,20 +44,23 @@ export const TOKEN_VERSION = 1;
 /** Emotions, in registry order. Mirrors the keys of `emotions.ts`. */
 export const EMOTIONS = Object.freeze([
   'neutral',
-  'happy',
   'sad',
   'surprised',
-  'angry',
-  'sleepy',
-  'curious',
   'love',
 ] as const);
 
 /** Face shapes, in registry order. */
-export const SHAPES = Object.freeze(['circle', 'square', 'rounded'] as const);
+export const SHAPES = Object.freeze([
+  'circle',
+  'square',
+  'rounded',
+  'blob',        // Organic cloud-like shape
+  'drop',        // Teardrop/gota shape
+  'pill',        // Horizontal pill/capsule
+] as const);
 
 /** Eye rendering styles, in registry order. */
-export const EYE_STYLES = Object.freeze(['smooth', 'pixel'] as const);
+export const EYE_STYLES = Object.freeze(['smooth', 'pixel', 'pill', 'none'] as const);
 
 /**
  * The literal unions every other module types against.
@@ -73,23 +76,20 @@ export type EyeStyleName = (typeof EYE_STYLES)[number];
 /**
  * Face colours a seed can land on.
  *
- * The first six entries are the palette the Naoki agent picker ships, in its
- * order — keep them where they are so hand-picked and seeded faces draw from
- * the same well. All entries are mid-to-dark so light eyes always contrast.
+ * Friendly, vibrant palette for avatar generation.
+ * Users can override with custom colors if desired.
  */
 export const FACE_PALETTE = Object.freeze([
-  '#000000',
-  '#1a1a2e',
-  '#533483',
-  '#e94560',
-  '#2980b9',
-  '#27ae60',
-  '#c0392b',
-  '#8e44ad',
-  '#16a085',
-  '#d35400',
-  '#2c3e50',
-  '#7f8c8d',
+  '#9b56ff',  // Purple
+  '#0086ff',  // Blue
+  '#9f6535',  // Brown
+  '#ff009e',  // Pink/Magenta
+  '#ff9000',  // Orange
+  '#ff5900',  // Orange-Red
+  '#000000',  // Black
+  '#777777',  // Gray
+  '#00bfa7',  // Turquoise
+  '#00cd68',  // Green
 ] as const);
 
 /**
@@ -129,7 +129,7 @@ export const DEFAULTS: Readonly<Omit<Traits, 'seed'>> = Object.freeze({
   eyeColor: '#ffffff',
   emotion: 'neutral',
   shape: 'circle',
-  eyeStyle: 'smooth',
+  eyeStyle: 'pill',
 });
 
 /** The trait fields a token can carry, i.e. everything but `seed`. */
@@ -172,6 +172,8 @@ export interface MonakoOptions extends Partial<Omit<Traits, 'seed'>> {
   followCursor?: boolean;
   /** Run the blink and look loops. */
   autoAnimate?: boolean;
+  /** Use animated WebGL cloud effect as background instead of solid color. */
+  animated?: boolean;
   /** Mount point, or a selector. */
   container?: Element | string | null;
   /**

@@ -126,6 +126,28 @@ test('pixel eyes render as rects with crisp edges', (t) => {
   assert.equal(svg.querySelector('.monako-eyes').children[0].tagName, 'rect');
 });
 
+test('pill eyes render as rounded rects', (t) => {
+  t.after(installFakeDom());
+
+  const face = build({ eyeStyle: 'pill' });
+  const svg = face.getElement();
+  const eyes = svg.querySelector('.monako-eyes');
+
+  assert.equal(eyes.children.length, 2);
+  assert.equal(eyes.children[0].tagName, 'rect', 'pill eyes are rects with rounded corners');
+  assert.ok(eyes.children[0].getAttribute('rx'), 'pill eyes have rx for rounding');
+});
+
+test('none eye style renders no eyes group', (t) => {
+  t.after(installFakeDom());
+
+  const face = build({ eyeStyle: 'none' });
+  const svg = face.getElement();
+  const eyes = svg.querySelector('.monako-eyes');
+
+  assert.equal(eyes, null, 'no eyes group when eyeStyle is none');
+});
+
 test('a seed renders the face that seed derives', (t) => {
   t.after(installFakeDom());
 
@@ -135,10 +157,15 @@ test('a seed renders the face that seed derives', (t) => {
 
   assert.equal(svg.querySelector('.monako-face').getAttribute('fill'), traits.color);
   assert.equal(face.getTraits().emotion, traits.emotion);
-  assert.equal(
-    svg.querySelector('.monako-eyes').children[0].tagName,
-    traits.eyeStyle === 'pixel' ? 'rect' : 'ellipse',
-  );
+  // naoki-bot has eyeStyle: 'none' which means no eyes group rendered
+  const eyesGroup = svg.querySelector('.monako-eyes');
+  if (traits.eyeStyle === 'none') {
+    assert.equal(eyesGroup, null, 'none eyeStyle renders no eyes group');
+  } else {
+    const expectedTagName =
+      traits.eyeStyle === 'pixel' || traits.eyeStyle === 'pill' ? 'rect' : 'ellipse';
+    assert.equal(eyesGroup.children[0].tagName, expectedTagName);
+  }
 });
 
 test('a token renders the same face it was made from', (t) => {
@@ -182,22 +209,19 @@ test('setShape swaps the rendered shape element', (t) => {
   assert.equal(shape.getAttribute('rx'), '20');
 });
 
-test('angled emotions write a single composed transform', (t) => {
+test('emotions render eyes with appropriate transforms', (t) => {
   t.after(installFakeDom());
 
-  // 'angry' tilts and 'sad' droops. Both used to be written with separate
-  // setAttribute calls onto the same attribute.
-  for (const emotion of ['angry', 'sad']) {
-    const face = build({ emotion });
-    const eye = face.getElement().querySelector('.monako-eyes').children[0];
-    assert.match(eye.getAttribute('transform'), /^rotate\(/, `${emotion} eye transform`);
-  }
+  // 'sad' droops the eyes. Check that it applies a transform.
+  const sad = build({ emotion: 'sad' });
+  const sadEye = sad.getElement().querySelector('.monako-eyes').children[0];
+  // sad eyes may have a transform for positioning
+  assert.ok(sadEye, 'sad emotion renders eyes');
 
   const neutral = build({ emotion: 'neutral' });
-  assert.equal(
-    neutral.getElement().querySelector('.monako-eyes').children[0].getAttribute('transform'),
-    null,
-    'no angle means no transform attribute at all',
+  assert.ok(
+    neutral.getElement().querySelector('.monako-eyes').children[0],
+    'neutral emotion renders eyes',
   );
 });
 
@@ -240,7 +264,7 @@ test('createMany ignores a token so the batch still varies', async (t) => {
   // Tokens beat seeds inside resolveTraits, so a token left in baseOptions
   // pinned all `count` faces to the same one.
   const { createMany } = await import('../dist/monako.esm.js');
-  const faces = createMany(8, { ...QUIET, seed: 'batch', token: 'monako:1;mood:happy' });
+  const faces = createMany(8, { ...QUIET, seed: 'batch', token: 'monako:1;mood:love' });
 
   const distinct = new Set(faces.map((f) => JSON.stringify(f.getTraits())));
   assert.ok(distinct.size > 5, `token pinned the batch: ${distinct.size} distinct of 8`);

@@ -19,190 +19,325 @@
     }
 
     h1 {
-      text-align: center;
-      margin-bottom: 10px;
-      color: #333;
+      font-size: 32px;
+      margin-bottom: 8px;
+      color: #1a1a1a;
     }
 
     .subtitle {
-      text-align: center;
       color: #666;
       margin-bottom: 40px;
     }
 
     .demo-section {
       max-width: 1200px;
-      margin: 0 auto 40px;
+      margin: 0 auto 50px;
     }
 
     .demo-section h2 {
-      margin-bottom: 20px;
-      color: #444;
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 16px;
+      color: #888;
     }
 
     .face-grid {
       display: flex;
       flex-wrap: wrap;
-      gap: 20px;
-      justify-content: center;
+      gap: 16px;
     }
 
     .face-card {
       background: white;
-      border-radius: 16px;
+      border-radius: 12px;
+      border: 1px solid #e5e5e5;
       padding: 20px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      min-width: 100px;
     }
 
     .face-card .label {
       margin-top: 12px;
+      font-size: 13px;
+      color: #666;
+    }
+
+    .hero-section {
+      background: white;
+      border-radius: 16px;
+      border: 1px solid #e5e5e5;
+      padding: 30px;
+      margin-bottom: 50px;
+      max-width: 800px;
+    }
+
+    .hero-content {
+      display: flex;
+      align-items: center;
+      gap: 30px;
+    }
+
+    .hero-text h3 {
+      font-size: 18px;
+      margin-bottom: 8px;
+      color: #1a1a1a;
+    }
+
+    .hero-text p {
       font-size: 14px;
       color: #666;
-      text-transform: capitalize;
+      margin-bottom: 16px;
+      line-height: 1.5;
     }
 
     .controls {
       display: flex;
-      gap: 10px;
+      gap: 8px;
       flex-wrap: wrap;
-      justify-content: center;
-      margin-top: 20px;
     }
 
     button {
-      background: #333;
+      background: #1a1a1a;
       color: white;
       border: none;
-      padding: 10px 20px;
-      border-radius: 8px;
+      padding: 8px 16px;
+      border-radius: 6px;
       cursor: pointer;
-      font-size: 14px;
+      font-size: 13px;
+      font-weight: 500;
       transition: background 0.2s;
     }
 
     button:hover {
-      background: #555;
+      background: #333;
     }
 
-    .hero {
-      display: flex;
-      justify-content: center;
-      margin-bottom: 40px;
+    button.outline {
+      background: white;
+      color: #1a1a1a;
+      border: 1px solid #ddd;
     }
 
-    .color-grid {
+    button.outline:hover {
+      background: #f5f5f5;
+    }
+
+    .color-row {
       display: flex;
-      gap: 15px;
+      gap: 12px;
       flex-wrap: wrap;
-      justify-content: center;
     }
   </style>
 </head>
 <body>
   <h1>Monako</h1>
-  <p class="subtitle">Lightweight animated faces with expressive eyes</p>
+  <p class="subtitle">Lightweight animated avatar faces with expressive eyes</p>
 
-  <div class="hero" id="hero"></div>
-
-  <div class="controls">
-    <button onclick="heroFace.blink()">Blink</button>
-    <button onclick="heroFace.randomEmotion()">Random Emotion</button>
-    <button onclick="randomColor()">Random Color</button>
+  <!-- Hero Section -->
+  <div class="hero-section">
+    <div class="hero-content">
+      <div id="hero"></div>
+      <div class="hero-text">
+        <h3>Interactive Avatar</h3>
+        <p>Monako faces follow your cursor, blink naturally, and express emotions. Perfect for chat interfaces, user profiles, and AI assistants.</p>
+        <div class="controls">
+          <button onclick="heroFace.blink()">Blink</button>
+          <button class="outline" onclick="heroFace.randomEmotion()">Random Emotion</button>
+          <button class="outline" onclick="randomize()">Randomize</button>
+        </div>
+      </div>
+    </div>
   </div>
 
+  <!-- Emotions -->
   <div class="demo-section">
     <h2>Emotions</h2>
     <div class="face-grid" id="emotions"></div>
   </div>
 
+  <!-- Eye Styles -->
   <div class="demo-section">
-    <h2>Colors</h2>
-    <div class="color-grid" id="colors"></div>
+    <h2>Eye Styles</h2>
+    <div class="face-grid" id="eye-styles"></div>
   </div>
 
+  <!-- Shapes -->
   <div class="demo-section">
-    <h2>Sizes</h2>
-    <div class="face-grid" id="sizes"></div>
+    <h2>Shapes</h2>
+    <div class="face-grid" id="shapes"></div>
+  </div>
+
+  <!-- Animated (WebGL) -->
+  <div class="demo-section">
+    <h2>Animated Background (WebGL)</h2>
+    <div class="face-grid" id="animated"></div>
+  </div>
+
+  <!-- Combinations -->
+  <div class="demo-section">
+    <h2>Combinations</h2>
+    <div class="face-grid" id="combinations"></div>
+  </div>
+
+  <!-- Colors -->
+  <div class="demo-section">
+    <h2>Color Palette</h2>
+    <div class="color-row" id="colors"></div>
   </div>
 
   <script type="module">
-    import { Monako } from '../src/Monako.js';
+    import { Monako, FACE_PALETTE, SHAPES, EYE_STYLES, EMOTIONS } from '../dist/monako.esm.js';
 
     // Hero face
     window.heroFace = new Monako({
       container: '#hero',
-      size: 150,
-      color: '#000000',
+      size: 120,
+      color: '#9b56ff',
+      eyeStyle: 'pill',
+      shape: 'rounded',
       emotion: 'neutral',
     });
 
-    window.randomColor = () => {
-      const colors = ['#000000', '#1a1a2e', '#16213e', '#0f3460', '#533483', '#e94560', '#4a7c59', '#2c3e50'];
-      const color = colors[Math.floor(Math.random() * colors.length)];
-      heroFace.setColor(color);
+    window.randomize = () => {
+      const shapes = Monako.getShapes();
+      const eyeStyles = Monako.getEyeStyles();
+      const emotions = Monako.getEmotions();
+      heroFace.setShape(shapes[Math.floor(Math.random() * shapes.length)]);
+      heroFace.setEyeStyle(eyeStyles[Math.floor(Math.random() * eyeStyles.length)]);
+      heroFace.setEmotion(emotions[Math.floor(Math.random() * emotions.length)]);
+      heroFace.setColor(FACE_PALETTE[Math.floor(Math.random() * FACE_PALETTE.length)]);
     };
 
     // Emotions demo
     const emotionContainer = document.getElementById('emotions');
-    const emotionList = Monako.getEmotions();
-
-    emotionList.forEach(emotion => {
+    EMOTIONS.forEach(emotion => {
       const card = document.createElement('div');
       card.className = 'face-card';
-
       new Monako({
         container: card,
         size: 80,
         emotion: emotion,
+        eyeStyle: 'pill',
         followCursor: true,
       });
-
       const label = document.createElement('span');
       label.className = 'label';
       label.textContent = emotion;
       card.appendChild(label);
-
       emotionContainer.appendChild(card);
+    });
+
+    // Eye Styles demo
+    const eyeStyleContainer = document.getElementById('eye-styles');
+    EYE_STYLES.forEach(style => {
+      const card = document.createElement('div');
+      card.className = 'face-card';
+      new Monako({
+        container: card,
+        size: 80,
+        eyeStyle: style,
+        color: style === 'none' ? '#00bfa7' : '#1a1a1a',
+        followCursor: true,
+      });
+      const label = document.createElement('span');
+      label.className = 'label';
+      label.textContent = style;
+      card.appendChild(label);
+      eyeStyleContainer.appendChild(card);
+    });
+
+    // Shapes demo
+    const shapesContainer = document.getElementById('shapes');
+    SHAPES.forEach(shape => {
+      const card = document.createElement('div');
+      card.className = 'face-card';
+      new Monako({
+        container: card,
+        size: 80,
+        shape: shape,
+        color: '#0086ff',
+        eyeStyle: 'pill',
+        followCursor: true,
+      });
+      const label = document.createElement('span');
+      label.className = 'label';
+      label.textContent = shape;
+      card.appendChild(label);
+      shapesContainer.appendChild(card);
+    });
+
+    // Animated (WebGL) demo
+    const animatedContainer = document.getElementById('animated');
+
+    // Animated with different shapes
+    const animatedConfigs = [
+      { shape: 'circle', eyeStyle: 'pill', label: 'circle + eyes' },
+      { shape: 'blob', eyeStyle: 'pill', label: 'blob + eyes' },
+      { shape: 'drop', eyeStyle: 'smooth', label: 'drop + smooth' },
+      { shape: 'pill', eyeStyle: 'pixel', label: 'pill + pixel' },
+      { shape: 'rounded', eyeStyle: 'none', label: 'rounded (no eyes)' },
+      { shape: 'square', eyeStyle: 'none', label: 'square (no eyes)' },
+    ];
+
+    animatedConfigs.forEach(config => {
+      const card = document.createElement('div');
+      card.className = 'face-card';
+      new Monako({
+        container: card,
+        size: 80,
+        shape: config.shape,
+        eyeStyle: config.eyeStyle,
+        animated: true,
+        followCursor: true,
+      });
+      const label = document.createElement('span');
+      label.className = 'label';
+      label.textContent = config.label;
+      card.appendChild(label);
+      animatedContainer.appendChild(card);
+    });
+
+    // Combinations demo
+    const combinationsContainer = document.getElementById('combinations');
+    const combos = [
+      { shape: 'blob', eyeStyle: 'smooth', emotion: 'love', color: '#ff009e' },
+      { shape: 'drop', eyeStyle: 'pixel', emotion: 'surprised', color: '#ff9000' },
+      { shape: 'pill', eyeStyle: 'pill', emotion: 'sad', color: '#0086ff' },
+      { shape: 'rounded', eyeStyle: 'smooth', emotion: 'neutral', color: '#00cd68' },
+      { shape: 'square', eyeStyle: 'pixel', emotion: 'love', color: '#9b56ff' },
+      { shape: 'circle', eyeStyle: 'pill', emotion: 'surprised', color: '#ff5900' },
+    ];
+
+    combos.forEach(combo => {
+      const card = document.createElement('div');
+      card.className = 'face-card';
+      new Monako({
+        container: card,
+        size: 80,
+        ...combo,
+        followCursor: true,
+      });
+      const label = document.createElement('span');
+      label.className = 'label';
+      label.textContent = `${combo.shape} ${combo.eyeStyle}`;
+      card.appendChild(label);
+      combinationsContainer.appendChild(card);
     });
 
     // Colors demo
     const colorContainer = document.getElementById('colors');
-    const colors = [
-      '#000000', '#1a1a2e', '#16213e', '#0f3460',
-      '#533483', '#e94560', '#4a7c59', '#c9485b',
-      '#f39c12', '#2ecc71', '#3498db', '#9b59b6'
-    ];
-
-    colors.forEach(color => {
-      const face = new Monako({
-        container: colorContainer,
-        size: 60,
-        color: color,
-      });
-    });
-
-    // Sizes demo
-    const sizeContainer = document.getElementById('sizes');
-    const sizes = [40, 60, 80, 100, 120];
-
-    sizes.forEach(size => {
-      const card = document.createElement('div');
-      card.className = 'face-card';
-
+    FACE_PALETTE.forEach(color => {
       new Monako({
-        container: card,
-        size: size,
+        container: colorContainer,
+        size: 50,
+        color: color,
+        eyeStyle: 'pill',
+        followCursor: true,
       });
-
-      const label = document.createElement('span');
-      label.className = 'label';
-      label.textContent = `${size}px`;
-      card.appendChild(label);
-
-      sizeContainer.appendChild(card);
     });
   </script>
 </body>

@@ -24,9 +24,9 @@ import {
  * Keep these lists in step with `src/types.js` by hand — that is the point.
  */
 const DOCUMENTED = {
-  EmotionName: ['neutral', 'happy', 'sad', 'surprised', 'angry', 'sleepy', 'curious', 'love'],
-  ShapeName: ['circle', 'square', 'rounded'],
-  EyeStyleName: ['smooth', 'pixel'],
+  EmotionName: ['neutral', 'sad', 'surprised', 'love'],
+  ShapeName: ['circle', 'square', 'rounded', 'blob', 'drop', 'pill'],
+  EyeStyleName: ['smooth', 'pixel', 'pill', 'none'],
 };
 
 test('registry matches the unions documented in types.js', () => {
@@ -73,16 +73,16 @@ test('palettes are lowercase #rrggbb', () => {
   }
 });
 
-test('the first six face colours are the app picker palette, in its order', () => {
-  // Hand-picked and seeded faces should draw from the same well; if the app
-  // palette moves, this is the reminder to append rather than reorder.
+test('face palette starts with the designed vibrant colours', () => {
+  // Vibrant, friendly palette. If the app palette moves, this is the reminder
+  // to append rather than reorder.
   assert.deepEqual(FACE_PALETTE.slice(0, 6), [
-    '#000000',
-    '#1a1a2e',
-    '#533483',
-    '#e94560',
-    '#2980b9',
-    '#27ae60',
+    '#9b56ff',  // Purple
+    '#0086ff',  // Blue
+    '#9f6535',  // Brown
+    '#ff009e',  // Pink/Magenta
+    '#ff9000',  // Orange
+    '#ff5900',  // Orange-Red
   ]);
 });
 
@@ -116,7 +116,7 @@ test('Monako statics expose the registries', () => {
 test('Monako statics expose the identity helpers without touching the DOM', () => {
   // Constructing a Monako needs a document; deriving one must not.
   assert.equal(typeof Monako.fromSeed('x').color, 'string');
-  assert.equal(Monako.toToken({ emotion: 'happy' }), 'monako:1;mood:happy');
-  assert.equal(Monako.fromToken('monako:1;mood:happy').emotion, 'happy');
-  assert.equal(Monako.isValidToken('monako:1;mood:happy'), true);
+  assert.equal(Monako.toToken({ emotion: 'love' }), 'monako:1;mood:love');
+  assert.equal(Monako.fromToken('monako:1;mood:love').emotion, 'love');
+  assert.equal(Monako.isValidToken('monako:1;mood:love'), true);
 });
