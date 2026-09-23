@@ -3,7 +3,7 @@
 Lightweight animated faces with expressive eyes. Perfect for tables, agents, avatars, and anywhere you need personality.
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/5076b5a0-32b7-408f-9012-40662a78c340" alt="monako" width="100%" />
+  <img src="https://raw.githubusercontent.com/rosvelthq/monako/main/assets/demo.gif" alt="monako demo" width="100%" />
 </p>
 
 ## Install
